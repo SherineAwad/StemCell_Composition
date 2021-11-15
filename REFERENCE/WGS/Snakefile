@@ -1,0 +1,50 @@
+configfile: "config.yaml"
+
+rule all:
+      input:
+        expand("{sample}.bam", sample=config['REF_SAMPLES']),
+        expand("{cohort}.vcf", cohort=config['COHORT'])
+rule index:
+     input: 
+        expand("{genome}.fasta", genome = config['GENOME']),
+     params: 
+        config['GENOME'] 
+     log: "logs/index.log"
+     benchmark: "logs/index.benchmark"
+     conda: 'env/env-align.yaml'
+     threads: 8 
+     output:
+        expand("{genome}.fasta.fai", genome = config['GENOME']),        
+        expand("{genome}.rev.1.bt2", genome = config['GENOME']), 
+        expand("{genome}.rev.2.bt2", genome = config['GENOME']),
+        expand("{genome}.1.bt2", genome = config['GENOME']),
+        expand("{genome}.2.bt2", genome = config['GENOME']),
+        expand("{genome}.3.bt2", genome = config['GENOME']),
+        expand("{genome}.4.bt2", genome = config['GENOME'])
+     shell: 
+         """
+          bowtie2-build {input} {params} --threads 8
+          samtools faidx {input} 
+         """ 
+
+rule cram_to_bam: 
+     input:
+           expand("{genome}.fasta", genome = config['GENOME']), 
+           "{sample}.cram" 
+     output: 
+            "{sample}.bam"
+     shell: 
+         "samtools view -b  -T {input[0]} -o {output} {input[1]}"
+
+
+rule vcf: 
+    input: 
+        expand("{genome}.fasta", genome = config['GENOME']),
+    params:
+         I =  lambda w: " -Ou " +" ".join(expand("{sample}.bam", sample =config['REF_SAMPLES']))
+    output:
+        expand("{cohort}.vcf",  cohort=config['COHORT'])
+    shell: 
+        """ 
+        bcftools mpileup --fasta-ref {input} {params.I} -d 10000 --threads 2 | bcftools call -vcO v -o {output}
+        """ 
