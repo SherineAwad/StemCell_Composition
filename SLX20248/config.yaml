@@ -1,0 +1,43 @@
+SAMPLES : ['SLX-20248.UDP0197.HJFGGDRXY.s_2',
+'SLX-20248.UDP0205.HJFGGDRXY.s_2',
+'SLX-20248.UDP0212.HJFGGDRXY.s_2',
+'SLX-20248.UDP0213.HJFGGDRXY.s_2',
+'SLX-20248.UDP0220.HJFGGDRXY.s_2',
+'SLX-20248.UDP0221.HJFGGDRXY.s_2',
+'SLX-20248.UDP0228.HJFGGDRXY.s_2',
+'SLX-20248.UDP0229.HJFGGDRXY.s_2',
+'SLX-20248.UDP0236.HJFGGDRXY.s_2',
+'SLX-20248.UDP0237.HJFGGDRXY.s_2',
+'SLX-20248.UDP0244.HJFGGDRXY.s_2',
+'SLX-20248.UDP0245.HJFGGDRXY.s_2',
+'SLX-20248.UDP0252.HJFGGDRXY.s_2',
+'SLX-20248.UDP0253.HJFGGDRXY.s_2',
+'SLX-20248.UDP0260.HJFGGDRXY.s_2',
+'SLX-20248.UDP0261.HJFGGDRXY.s_2',
+'SLX-20248.UDP0268.HJFGGDRXY.s_2',
+'SLX-20248.UDP0269.HJFGGDRXY.s_2',
+'SLX-20248.UDP0276.HJFGGDRXY.s_2',
+'SLX-20248.UDP0284.HJFGGDRXY.s_2']
+
+REF_SAMPLES: ['UM4-6_P15_150116','WA09_P25_140528','WA14_P21_131206','WA17_P12_140530','WA18_P9_140530','WA19_P11_140529','WA26_P15_140606','WA27_P15_140613','WIBR2_P33_140617','WIBR6_P11_140617'] 
+
+COHORT: "WGS"
+REF_VCF: "WGS.vcf"
+N: 11
+GENOME: "/Data/resources/Homo_sapiens_assembly38"
+DBSNP: "/Data/resources/Homo_sapiens_assembly38.dbsnp138.vcf"
+INDELS: "/Data/resources/Homo_sapiens_assembly38.known_indels.vcf"
+GOLD_STANDARD: "/Data/resources/Mills_and_1000G_gold_standard.indels.hg38.vcf"
+
+SRC : "/Data/pipeline/src"
+
+CHROMOSOMES: ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11','chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20' , 'chr21', 'chr22', 'chrX', 'chrY', 'chrM'] 
+
+INTERVALS_FILE : 'intervals.list'
+GENOMEDB: "my_database"
+RG: "A00489_467.HT3G5DMXX.s_2"
+ALL_VCF: "SLX-20248.vcf"
+ANNOVAR: /mnt/data/annovar
+humanDB: /mnt/data/annovar/humandb
+annovar_prefix: "hg38_multianno"
+version : hg38

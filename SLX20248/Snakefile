@@ -1,0 +1,166 @@
+configfile: "config.yaml"
+
+rule all:
+      input:
+        expand("{sample}.sam", sample=config['SAMPLES']),
+        expand("{sample}.bam", sample=config['SAMPLES']),
+        expand("{sample}.sorted.bam", sample =config['SAMPLES']),
+        expand("{cohort}_regions.txt", cohort = config['COHORT']),
+        expand("{sample}.bamcounts", sample=config['SAMPLES']),
+        expand("{sample}_alleles.txt", sample=config['SAMPLES']),
+        expand("{sample}_estimates.txt", sample=config['SAMPLES'])
+
+rule index_fai:
+     input:
+        expand("{genome}.fasta", genome = config['GENOME']),
+     params:
+        config['GENOME']
+     log: "logs/index.log"
+     benchmark: "logs/index.benchmark"
+     conda: 'env/env-align.yaml'
+     threads: 8
+     output:
+        expand("{genome}.fasta.fai", genome = config['GENOME']),
+     shell: 
+        "samtools faidx {input}"
+
+rule index:
+     input: 
+        expand("{genome}.fasta", genome = config['GENOME']),
+     params: 
+        config['GENOME'] 
+     log: "logs/index.log"
+     benchmark: "logs/index.benchmark"
+     conda: 'env/env-align.yaml'
+     threads: 8 
+     output:
+        expand("{genome}.rev.1.bt2", genome = config['GENOME']), 
+        expand("{genome}.rev.2.bt2", genome = config['GENOME']),
+        expand("{genome}.1.bt2", genome = config['GENOME']),
+        expand("{genome}.2.bt2", genome = config['GENOME']),
+        expand("{genome}.3.bt2", genome = config['GENOME']),
+        expand("{genome}.4.bt2", genome = config['GENOME'])
+     shell: 
+         """
+          bowtie2-build {input} {params} --threads 8
+         """ 
+rule trim: 
+    input: 
+       r1 = "{sample}.r_1.fq.gz",
+       r2 = "{sample}.r_2.fq.gz"
+    log: "logs/{sample}.trim.log"
+    benchmark: "logs/{sample}.trim.benchmark" 
+    conda :'env/env-trim.yaml' 
+    output: 
+      val1 = "galore/{sample}.r_1_val_1.fq.gz",
+      val2 = "galore/{sample}.r_2_val_2.fq.gz"
+    shell: 
+        """
+         mkdir -p galore
+         mkdir -p fastqc
+         trim_galore --gzip --retain_unpaired --trim1 --fastqc --fastqc_args "--outdir fastqc" -o galore --paired {input.r1} {input.r2}
+        """ 
+
+rule tosam:
+    input:
+        expand("{genome}.fasta.fai", genome = config['GENOME']),
+        expand("{genome}.rev.1.bt2", genome = config['GENOME']),
+        expand("{genome}.rev.2.bt2", genome = config['GENOME']),
+        expand("{genome}.1.bt2", genome = config['GENOME']),
+        expand("{genome}.2.bt2", genome = config['GENOME']),
+        expand("{genome}.3.bt2", genome = config['GENOME']),
+        expand("{genome}.4.bt2", genome = config['GENOME']),
+        r1 = "galore/{sample}.r_1_val_1.fq.gz",
+        r2 = "galore/{sample}.r_2_val_2.fq.gz"
+    params:
+        genome = config['GENOME']
+    threads: 4
+    log: "logs/{sample}.align.log"
+    benchmark: "logs/{sample}.tosam.benchmark"
+    conda: 'env/env-align.yaml' 
+    output:
+        "{sample}.sam"
+    shell:
+        "bowtie2 -x {params.genome} -1 {input.r1} -2 {input.r2} -S {output} -p 4"
+
+rule tobam: 
+      input:
+          "{sample}.sam"
+      output:
+          "{sample}.bam",
+      shell:
+         """
+           samtools view -S -b {input} > {output[0]}
+         """
+
+
+rule sort:
+       input:
+            "{sample}.bam"
+       output:
+            "{sample}.sorted.bam"
+       params:
+            "{sample}.tmp.sorted"
+       log:
+            "{sample}.sorted.log"
+       conda: 'env/env-align.yaml'
+       shell:
+            """
+                samtools sort -T {params} -o {output} {input}
+                samtools index {output} 
+            """
+
+
+rule filter_vcf: 
+     input: 
+         references = config['REF_VCF']
+     params: 
+         cohort = config['COHORT'],
+         n = config['N'] 
+     output: 
+         expand("{cohort}_filtered.vcf", cohort = config['COHORT']), 
+         expand("{cohort}_regions.txt", cohort = config['COHORT'])
+     shell: 
+         """
+         python {config[SRC]}/get_genotypes.py -i {input} -o {params.cohort} -n {params.n}
+         """ 
+
+rule bam_count: 
+      input: 
+         "{sample}.sorted.bam",
+         expand("{cohort}_regions.txt", cohort = config['COHORT'])
+      output: 
+         "{sample}.bamcounts"
+      params: 
+          genome =config['GENOME'] 
+      shell:
+         """
+          bam-readcount -l {input[1]}  -f {params}.fasta {input[0]} >  {output} 
+         """
+
+rule estimate_MAF:
+      input: 
+         bamcounts = "{sample}.bamcounts",
+         vcf = expand("{genome}_filtered.vcf", genome =config['COHORT']),
+      params: 
+          N = config['N'],
+          out = "{sample}"
+      output:
+         "{sample}_alleles.txt", 
+         "{sample}_genotypes.txt" 
+      shell: 
+         """
+         python {config[SRC]}/estimate_MAF.py -i {input.bamcounts} -v {input.vcf} -o {params.out} -n {params.N}
+         """ 
+
+rule run_estimator: 
+      input: 
+        "{sample}_alleles.txt", 
+        "{sample}_genotypes.txt"
+      output: 
+        "{sample}_estimates.txt"
+      shell: 
+          """
+          Rscript {config[SRC]}/estimate_weights.R {input[0]} {input[1]} {output} 
+          """
+
