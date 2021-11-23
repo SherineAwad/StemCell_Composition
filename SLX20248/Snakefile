@@ -8,6 +8,7 @@ rule all:
         expand("{cohort}_regions.txt", cohort = config['COHORT']),
         expand("{sample}.bamcounts", sample=config['SAMPLES']),
         expand("{sample}_alleles.txt", sample=config['SAMPLES']),
+        expand("{sample}_estimates.txt", sample=config['SAMPLES']), 
         expand("{sample}_estimates.txt", sample=config['SAMPLES'])
 
 rule index_fai:
@@ -118,11 +119,10 @@ rule filter_vcf:
          cohort = config['COHORT'],
          n = config['N'] 
      output: 
-         expand("{cohort}_filtered.vcf", cohort = config['COHORT']), 
          expand("{cohort}_regions.txt", cohort = config['COHORT'])
      shell: 
          """
-         python {config[SRC]}/get_genotypes.py -i {input} -o {params.cohort} -n {params.n}
+         Rscript {config[SRC]}/1.Create_region_list_bam-readcount.R {input}  {output}
          """ 
 
 rule bam_count: 
@@ -141,16 +141,13 @@ rule bam_count:
 rule estimate_MAF:
       input: 
          bamcounts = "{sample}.bamcounts",
-         vcf = expand("{genome}_filtered.vcf", genome =config['COHORT']),
-      params: 
-          N = config['N'],
-          out = "{sample}"
+         vcf = expand("{genome}.vcf", genome =config['COHORT']),
       output:
          "{sample}_alleles.txt", 
          "{sample}_genotypes.txt" 
       shell: 
          """
-         python {config[SRC]}/estimate_MAF.py -i {input.bamcounts} -v {input.vcf} -o {params.out} -n {params.N}
+         python {config[SRC]}/2.Bam-readcount_to_MAF_estimate.R {input.bamcounts} {input.vcf} {output[0]}  {output[1]}
          """ 
 
 rule run_estimator: 
