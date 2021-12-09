@@ -1,3 +1,4 @@
+#This is a slight update fro code written by Marta Perez-Alcantara
 # Convert bam-readcount output to minor allele frequency of SNP (b vector)
 # Input: bam-readcount output and genotype vcf
 # Output: minor allele frequency estimate (b vector)

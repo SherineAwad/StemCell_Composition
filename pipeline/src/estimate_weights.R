@@ -1,3 +1,4 @@
+#This is a slight update fro code written by Marta Perez-Alcantara 
 # Estimate weights
 # Input: b_estimate file and genotype vcf (reduced, from step 2)
 # Output: estimated donor proportions (w_estimate)

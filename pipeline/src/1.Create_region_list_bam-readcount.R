@@ -1,3 +1,4 @@
+#This is a slight update to code written by Marta Perez-Alcantara
 # Extract from vcf the chr, start column, and add an end column
 # Filter VCF to only the variants that are different across all donors
 # Input: VCF of non-identical SNPs for all donors
