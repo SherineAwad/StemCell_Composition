@@ -132,10 +132,12 @@ rule bam_count:
       output: 
          "{sample}.bamcounts"
       params: 
-          genome =config['GENOME'] 
+          genome =config['GENOME'],
+          depth="1000000000",
+          read_quality="30", 
       shell:
          """
-          bam-readcount -l {input[1]}  -f {params}.fasta {input[0]} >  {output} 
+          bam-readcount -w 1 -d {params.depth} -q {params.read_quality}  -f {params.genome}.fasta -l {input[1]}  {input[0]} >  {output} 
          """
 
 rule estimate_MAF:
@@ -147,7 +149,7 @@ rule estimate_MAF:
          "{sample}_genotypes.txt" 
       shell: 
          """
-         python {config[SRC]}/2.Bam-readcount_to_MAF_estimate.R {input.bamcounts} {input.vcf} {output[0]}  {output[1]}
+         Rscript {config[SRC]}/2.Bam-readcount_to_MAF_estimate.R {input.bamcounts} {input.vcf} {output[0]}  {output[1]}
          """ 
 
 rule run_estimator: 
