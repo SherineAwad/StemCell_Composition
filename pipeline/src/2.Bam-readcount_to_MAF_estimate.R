@@ -1,4 +1,3 @@
-#This is a slight update fro code written by Marta Perez-Alcantara
 # Convert bam-readcount output to minor allele frequency of SNP (b vector)
 # Input: bam-readcount output and genotype vcf
 # Output: minor allele frequency estimate (b vector)
@@ -7,18 +6,18 @@ library(data.table)
 library(tidyverse)
 options(stringsAsFactors = FALSE)
 
-args <- commandArgs(trailingOnly = TRUE)
 
-
-bam_readcount_path = args[1] #"input_for_bam-readcount_to_MAF_estimate/test_bam-readcount.txt"
-vcf_path = args[2] #"input_for_bam-readcount_to_MAF_estimate/test_vcf.vcf"
-b_estimate_path = args[3]  #"input_for_estimate_weights/b_estimate.csv"
-genotype_minor_allele_dos_path = args[4] #"input_for_estimate_weights/genotype_minor_allele_dosage.csv"
+  bam_readcount_path = "input_for_bam-readcount_to_MAF_estimate/test_bam-readcount.txt"
+  vcf_path = "input_for_bam-readcount_to_MAF_estimate/test_vcf.vcf"
+  b_estimate_path = "input_for_estimate_weights/b_estimate.csv"
+  genotype_minor_allele_dos_path = "input_for_estimate_weights/genotype_minor_allele_dosage.csv"
 
 # Reading in only 10 columns - consider selecting all if I look into non-ACGT single bp minor alleles
 bam_readcount= data.table::fread( cmd = paste("cat", bam_readcount_path,"| awk -F '\t' '{print $1 , $2 , $3 , $4, $5, $6, $7, $8, $9, $10}'"))
 
 colnames(bam_readcount) = c("CHROM","POS","REF","TOTAL_READS","DEL","A","C","G","T","N")
+bam_readcount[["REF"]] = toupper(bam_readcount[["REF"]]) 
+
 vcf = vcfR::read.vcfR(vcf_path)
 vcf_reduced = as.data.table(vcf@fix[,1:5])
 original_vcf_rows = nrow(vcf_reduced)
