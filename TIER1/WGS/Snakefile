@@ -8,7 +8,6 @@ rule all:
         expand("{cohort}_regions.txt", cohort = config['COHORT']),
         expand("{sample}.bamcounts", sample=config['SAMPLES']),
         expand("{sample}_alleles.txt", sample=config['SAMPLES']),
-        expand("{sample}_estimates.txt", sample=config['SAMPLES']), 
         expand("{sample}_estimates.txt", sample=config['SAMPLES'])
  
 rule index_fai:
