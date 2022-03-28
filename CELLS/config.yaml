@@ -1,0 +1,20 @@
+SAMPLES : ['SLX-18967.UDP0231.HT3G5DMXX.s_1',
+'SLX-18967.UDP0239.HT3G5DMXX.s_1',
+'SLX-18967.UDP0247.HT3G5DMXX.s_1',
+'SLX-18967.UDP0255.HT3G5DMXX.s_1',
+'SLX-18967.UDP0263.HT3G5DMXX.s_1',
+'SLX-18967.UDP0271.HT3G5DMXX.s_1',
+'SLX-18967.UDP0277.HT3G5DMXX.s_1',
+'SLX-18967.UDP0279.HT3G5DMXX.s_1',
+'SLX-18967.UDP0285.HT3G5DMXX.s_1',
+'SLX-18967.UDP0287.HT3G5DMXX.s_1']
+
+COHORT: "TIER1_WGS_REF"
+REF_VCF: "TIER1_WGS_REF.vcf"
+N: 11
+GENOME: "/Data/resources/Homo_sapiens_assembly38"
+
+SRC : "/Data/pipeline/src"
+MIN_BASE_QUALITY: 5
+CHROMOSOMES: ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11','chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20' , 'chr21', 'chr22', 'chrX', 'chrY', 'chrM'] 
+CONF: "/Data/fastqscreen/FastQ_Screen_Genomes/fastq_screen.conf"
