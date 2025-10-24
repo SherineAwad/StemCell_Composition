@@ -80,20 +80,22 @@ b\_estimate = \frac{\text{reads supporting ALT}}{\text{total reads at that posit
 ---
 
 ## Step 4: Estimate Donor Proportions (`w_estimate`)
-- **Input:**  
-  - `b_estimate.csv` → minor allele frequencies for the sample/donor  
-  - Minor allele dosage table (`genotype_minor_allele_dosage.csv`)  
-- **Process:**  
-  - Solve the linear system \( A \cdot w \approx b \) where:  
-    - \( A \) = minor allele dosage matrix (SNPs × donors)  
-    - \( w \) = vector of donor proportions to estimate  
-    - \( b \) = observed minor allele frequencies from bam-readcount  
-  - Constraints:  
-    - \( 0 \le w_i \le 1 \) for each donor  
-    - \( \sum w_i = 1 \)  
-  - SNPs where all donors are identical or not observed in the reads are removed.  
-- **Output:**  
-  - `w_estimate.txt` → estimated proportion of each donor in the sample
+
+- **Input:**
+  - `b_estimate.csv` → observed minor allele frequencies in the sample (from sequencing reads)
+  - Minor allele dosage table (`genotype_minor_allele_dosage.csv`) → known genotypes for all donors
+
+- **Process (conceptually):**
+  - For each SNP, the estimator compares the observed minor allele frequency in the sample to the known minor allele dosages of each donor.
+  - It determines a set of donor proportions that best explains the observed frequencies across all SNPs.
+  - SNPs where all donors have the same genotype or positions not observed in the sequencing data are ignored.
+  - The solution ensures that:
+    - Each donor proportion is between 0% and 100%
+    - The total of all donor proportions sums to 100%
+
+- **Output:**
+  - `w_estimate.txt` → estimated contribution of each donor to the sample
+
 
 | Donor  | Estimated Proportion |
 |--------|--------------------|
@@ -111,6 +113,60 @@ b\_estimate = \frac{\text{reads supporting ALT}}{\text{total reads at that posit
 3. **Bam-readcount + VCF → b_estimate & minor allele dosages** → minor allele frequencies for donor and dosages for all donors.  
 4. **b_estimate + dosages → w_estimate** → estimated donor proportions in the sample.
 
+
+
+# Conceptual Explanation of the Donor Proportion Estimator
+
+---
+
+### What the estimator does
+
+Imagine you have a **mixed sample** that contains DNA from several donors. You want to figure out **how much each donor contributed** to that sample.
+
+To do this, the estimator uses:
+
+1. **Observed data from the sequencing reads (`b_estimate`)**:
+
+   * At each variable position (SNP), it knows what fraction of reads in the mixed sample carry the minor allele.
+   * This tells you, for each SNP, how common the minor allele is in the mixture.
+
+2. **Donor genotypes (`genotype_minor_allele_dosage`)**:
+
+   * For every donor, you know whether they have 0, 1, or 2 copies of the minor allele at each SNP.
+   * This is essentially the **donor’s “signature”** for each SNP.
+
+---
+
+### How it works conceptually
+
+* For each SNP, the estimator asks:  
+  *“Given that I see this fraction of minor alleles in the sample, and knowing each donor’s SNP profile, what combination of donors could produce this observation?”*
+
+* It looks across all SNPs and tries to find a **set of donor proportions** that best explains the observed minor allele frequencies.
+
+* It ensures that the proportions:
+
+  * Are between 0 and 100% for each donor
+  * Add up to 100% in total
+
+---
+
+### What it produces
+
+* A simple **list of donor contributions** (weights/proportions) for the sample:
+
+| Donor  | Estimated Contribution |
+| ------ | ---------------------- |
+| Donor1 | 25%                    |
+| Donor2 | 50%                    |
+| Donor3 | 25%                    |
+
+* This tells you **how much DNA each donor contributed** to the sample.
+
+---
+
+✅ **In short:**  
+The estimator takes the observed DNA mixture (from sequencing reads) and compares it to known donor genotypes to **work out the fraction of each donor in the mixture**. It’s like figuring out the recipe of a cake by tasting it and knowing the possible ingredients.
 
 
 
