@@ -1,5 +1,0 @@
-GENOME_PATH: "/Data/bisulfite/"
-BISULFITE_PATH: "/Data/bisulfite/Bisulfite_Genome"
-SAMPLE: "test_data"
-SINGLE: "TRUE"
-THREADS: 4 
